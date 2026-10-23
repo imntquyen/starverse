@@ -1,0 +1,10 @@
+[build]
+  publish = "."
+[[redirects]]
+  from = "/profile/*"
+  to = "/index.html"
+  status = 200
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Permissions-Policy = "microphone=(self), camera=(self)"

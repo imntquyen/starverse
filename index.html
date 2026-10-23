@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STATVERSE – Learn. Play. Solve.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{--c:#38BDF8;--p:#A78BFA;--m:#F472B6;--t:#E2E8F0;--panel:rgba(15,23,60,.82)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--t);font:16px/1.6 'Plus Jakarta Sans',Inter,sans-serif;
+background:radial-gradient(ellipse at 20% 10%,#4c2a8f 0,transparent 45%),radial-gradient(ellipse at 85% 30%,#0e6f9e 0,transparent 45%),radial-gradient(ellipse at 50% 100%,#8b2f7a 0,transparent 50%),#0b1440;background-attachment:fixed}
+#stars{position:fixed;inset:0;z-index:-1}
+h1,h2,h3{color:#fff;margin:.3em 0}
+.card{background:var(--panel);border:1px solid transparent;border-radius:18px;padding:20px;margin:14px auto;max-width:860px;
+background-image:linear-gradient(var(--panel),var(--panel)),linear-gradient(120deg,var(--p),var(--c));background-origin:border-box;background-clip:padding-box,border-box;box-shadow:0 10px 40px rgba(124,58,237,.25);backdrop-filter:blur(18px)}
+input,textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid #5b6aa8;background:#0b1233;color:#fff;font:inherit;margin:6px 0}
+textarea{min-height:110px;resize:vertical}
+button{cursor:pointer;border:0;border-radius:12px;padding:12px 18px;font:600 15px inherit;font-family:inherit;color:#06122e;background:linear-gradient(120deg,var(--c),#7dd3fc);margin:4px 4px 4px 0;min-height:44px}
+button.alt{background:#27337a;color:#fff;border:1px solid #5b6aa8}
+button.rec{background:linear-gradient(120deg,#f43f5e,var(--m));color:#fff}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #fff}
+nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:10px}
+nav button.on{background:linear-gradient(120deg,var(--p),var(--m));color:#fff}
+.hide{display:none!important}.msg{padding:8px 12px;border-radius:10px;margin:8px 0;background:#10205a}.err{background:#7f1d3a}.ok{background:#0f5f4a}
+.out{background:#08102e;border-radius:12px;padding:14px;margin-top:10px;overflow-x:auto}
+.dice{display:inline-block;width:84px;height:84px;margin:6px;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45))}.dice.roll{animation:rl .16s linear infinite}@keyframes rl{to{transform:rotate(25deg) scale(1.06)}}.gb{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}.gb button.sel{background:linear-gradient(120deg,var(--p),var(--m));color:#fff}.avs button{background:#fff2;padding:6px;border-radius:50%}.avs button.sel{outline:3px solid var(--c)}#top{position:sticky;top:0;z-index:15;justify-content:flex-start;align-items:center;padding:8px 12px;background:rgba(11,20,64,.9);backdrop-filter:blur(12px);border-bottom:1px solid #3b4a90}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.hc{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:#14205f;color:#fff;border:1px solid #4b5bb0;padding:14px;min-height:112px;margin:0;transition:.2s}.hc:hover{transform:translateY(-3px);border-color:var(--c);box-shadow:0 8px 24px rgba(56,189,248,.25)}.hc .small{color:#E2E8F0;opacity:.9}
+#bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:space-around;padding:4px 6px;background:rgba(11,20,64,.95);border-top:1px solid #3b4a90}#bnav button{flex:1;background:none;color:#E2E8F0;border:0;font-size:11.5px;padding:4px;margin:0;display:flex;flex-direction:column;align-items:center;min-height:50px}#bnav button.on{color:var(--c)}#bnav button span{font-size:20px}
+button:disabled{opacity:.5;cursor:not-allowed}body{padding-bottom:70px}@media(max-width:600px){.card{margin:8px;padding:14px}h2{font-size:20px}}
+.post{border-top:1px solid #3b4a90;padding:10px 0}.small{font-size:13px;opacity:.8}
+code,.mono{font-family:'JetBrains Mono',monospace}
+#bot{position:fixed;right:16px;bottom:76px;z-index:20}
+#botbox{width:min(360px,92vw);height:480px;display:flex;flex-direction:column;margin-bottom:8px;padding:12px;max-width:none}
+#botlog{flex:1;overflow:auto}
+@media(prefers-reduced-motion:reduce){#stars{display:none}}
+</style></head><body>
+<canvas id="stars"></canvas>
+<header style="text-align:center;padding-top:16px"><h1>✦ STATVERSE</h1><div class="small">Learn. Play. Solve. Level Up.</div></header>
+
+<!-- BƯỚC 1: API KEY -->
+<section id="s-key" class="card">
+ <h2>Bước 1 – Kết nối AI của bạn</h2>
+ <p>Lấy khóa miễn phí tại <a style="color:var(--c)" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Khóa chỉ lưu trên trình duyệt của bạn.</p>
+ <input id="key" type="password" placeholder="Dán API key (AIza...)" autocomplete="off">
+ <button onclick="loadModels()">Tải danh sách model</button>
+ <select id="model" class="hide"></select>
+ <button id="btnConnect" class="hide" onclick="connect()">Kết nối model này</button>
+ <div id="keymsg"></div>
+</section>
+
+<!-- BƯỚC 2: ĐĂNG NHẬP -->
+<section id="s-auth" class="card hide">
+ <button class="alt" onclick="show('s-key')">← Quay lại</button>
+ <h2>Bước 2 – Đăng nhập / Đăng ký</h2>
+ <input id="em" type="email" placeholder="Email" autocomplete="email">
+ <input id="pw" type="password" placeholder="Mật khẩu (≥ 6 ký tự)" autocomplete="current-password">
+ <input id="nm" placeholder="Tên hiển thị (khi đăng ký)">
+ <button onclick="login()">Đăng nhập</button><button class="alt" onclick="signup()">Đăng ký</button>
+ <div id="authmsg"></div>
+</section>
+
+<!-- ỨNG DỤNG -->
+<main id="app" class="hide">
+ <nav id="top"><button id="homeb" onclick="goTab('home')">🏠 Trang chủ</button><b id="ttl" style="flex:1;color:#fff;padding:0 6px"></b><button class="alt" onclick="show('s-key')">⚙ Model</button><button class="alt" onclick="logout()">Thoát</button><div id="tabs" class="hide"><button data-t="home">🏠 Trang chủ</button><button data-t="solve" class="on">🧮 Giải bài</button><button data-t="forum">💬 Diễn đàn</button><button data-t="friends">👥 Bạn bè <span id="badge"></span></button><button data-t="practice">📝 Bài tương tự</button><button data-t="sim">📈 Đồ thị</button><button data-t="grade">🎓 Chấm bài</button><button data-t="mind">🧠 Bản đồ tư duy</button><button data-t="board">✍️ Bảng viết</button><button data-t="tutor">📖 TUTOR</button><button data-t="game">🎲 Trò chơi</button><button data-t="review">📊 Ôn tập</button><button data-t="profile"><span id="navav"></span> Hồ sơ</button><button class="alt" onclick="logout()">Đăng xuất</button><button class="alt" onclick="show('s-key');">Đổi key/model</button></div></nav>
+
+ <section id="t-home" class="card hide"><div id="hmbox"></div></section>
+ <section id="t-solve" class="card">
+  <h2>AI BUDDY – SOLVE</h2>
+  <div><button id="mTxt" onclick="mode('txt')">Nhập đề</button><button id="mCalc" class="alt" onclick="mode('calc')">＝ Máy tính</button></div>
+  <div id="pTxt">
+   <textarea id="q" placeholder="Gõ, đọc bằng micro, hoặc chụp/gửi ảnh đề bài..."></textarea>
+   <button id="mic" class="alt" onclick="toggleMic('q','mic')">🎤 Bật micro</button>
+   <label class="alt" style="display:inline-block"><button class="alt" onclick="document.getElementById('img').click()">📷 Chụp / Gửi ảnh đề</button></label>
+   <input id="img" type="file" accept="image/*" capture="environment" class="hide" onchange="ocr(this)">
+   <select id="lvl"><option>Chỉ gợi ý hướng giải</option><option>Giải một phần</option><option>Giải toàn bộ</option></select>
+   <button onclick="solve()">Giải đề ngay</button>
+  </div>
+  <div id="pCalc" class="hide">
+   <input id="expr" class="mono" placeholder="Ví dụ: 5!/(2!*3!) * 0.3^2 * 0.7^3 hoặc sqrt(2)*pi">
+   <button onclick="calc()">＝ Tính</button>
+   <div id="calcout" class="out mono">Kết quả hiện ở đây</div>
+  </div>
+  <div id="sres"></div>
+ </section>
+
+ <section id="t-forum" class="card hide">
+  <h2>STATVERSE FORUM</h2>
+  <input id="pt" placeholder="Tiêu đề câu hỏi"><div id="symbar"></div><textarea id="pb" placeholder="Nội dung. Dùng $công thức$ cho LaTeX. Ctrl+V để dán ảnh chụp màn hình." oninput="prevPost()" onpaste="pastePost(event)"></textarea><div class="small">Xem trước:</div><div id="ppv" class="out" style="min-height:40px"></div>
+  <button onclick="newPost()">Đăng câu hỏi</button>
+  <div id="fmsg"></div><div id="posts"></div>
+ </section>
+
+ <section id="t-game" class="card hide"><h2>Trò chơi</h2><div id="gbox"></div></section>
+ <section id="t-review" class="card hide"><h2>Ôn tập &amp; tiến độ</h2><div id="rbox"></div></section>
+ <section id="t-profile" class="card hide"><h2>Hồ sơ &amp; avatar</h2><div id="pbox"></div></section>
+<section id="t-friends" class="card hide"><h2>Bạn bè &amp; Chat 1-1</h2><div id="frbox"></div><div id="chat"></div></section>
+<section id="t-practice" class="card hide"><h2>Bài tập tương tự (tự luận)</h2><div id="prbox"></div></section>
+ <section id="t-sim" class="card hide"><h2>Đồ thị trực quan</h2><div id="simbox"></div></section>
+<section id="t-grade" class="card hide"><h2>Chấm bài theo barem</h2><div id="grbox"></div></section>
+ <section id="t-mind" class="card hide"><h2>Bản đồ tư duy</h2><div id="mmbox"></div></section>
+ <section id="t-board" class="card hide"><h2>Bảng viết tay</h2><div id="bdbox"></div></section>
+ <section id="t-tutor" class="card hide"><h2>TUTOR – Cẩm nang sử dụng</h2><div id="tubox"></div></section>
+</main>
+
+<div id="bnav" class="hide" role="navigation" aria-label="Điều hướng chính"><button data-g="home" onclick="goTab('home')" aria-label="Trang chủ"><span>🏠</span>Trang chủ</button><button data-g="solve" onclick="goTab('solve')" aria-label="Giải bài"><span>🧮</span>Giải bài</button><button data-g="forum" onclick="goTab('forum')" aria-label="Diễn đàn"><span>💬</span>Diễn đàn</button><button data-g="friends" onclick="goTab('friends')" aria-label="Bạn bè"><span>👥</span>Bạn bè</button><button data-g="profile" onclick="goTab('profile')" aria-label="Hồ sơ"><span>👤</span>Hồ sơ</button></div>
+<div id="bot" class="hide">
+ <div id="botbox" class="card hide"><b>Hỏi nhanh Toán</b>
+  <div id="botlog"></div>
+  <div style="display:flex;gap:4px"><input id="bi" maxlength="500" placeholder="Hỏi bất kỳ điều gì về toán..." onkeydown="if(event.key==='Enter')botSend()"><button id="bmic" class="alt" onclick="toggleMic('bi','bmic')">🎤</button><button onclick="botSend()">Gửi</button></div>
+ </div>
+ <button onclick="document.getElementById('botbox').classList.toggle('hide')" style="border-radius:50%;width:56px;height:56px;font-size:24px">💬</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SB_URL='https://ommzsrsznygltvjvfktj.supabase.co', SB_KEY='sb_publishable_LEOLOYg-lQl08gV2pmL1nw_ow48hzVr';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=s=>esc(s).replace(/\[\[img:(data:image\/jpeg;base64,[A-Za-z0-9+\/=]+)\]\]/g,'<img src="$1" style="max-width:100%;border-radius:8px">').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+const mathRender=el=>{try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false})}catch(e){}};
+const note=(id,t,c='')=>{$(id).innerHTML='<div class="msg '+c+'">'+esc(t)+'</div>'};
+let API=localStorage.sv_key||'', MODEL=localStorage.sv_model||'', user=null;
+$('key').value=API;
+
+/* ===== nền sao ===== */
+(function(){const c=$('stars'),x=c.getContext('2d');let S=[];
+function rs(){c.width=innerWidth;c.height=innerHeight;S=Array.from({length:Math.min(220,innerWidth/5)},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.5+.3,p:Math.random()*6}))}
+rs();addEventListener('resize',rs);
+(function f(t){if(document.hidden){requestAnimationFrame(f);return}x.clearRect(0,0,c.width,c.height);
+S.forEach(s=>{x.globalAlpha=.4+.6*Math.abs(Math.sin(t/1200+s.p));x.fillStyle='#fff';x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()});requestAnimationFrame(f)})(0)})();
+
+/* ===== điều hướng ===== */
+function show(id){['s-key','s-auth'].forEach(i=>$(i).classList.add('hide'));$('app').classList.add('hide');$('bot').classList.add('hide');$('bnav').classList.add('hide');
+ if(id==='app'){$('app').classList.remove('hide');$('bot').classList.remove('hide');$('bnav').classList.remove('hide')}else $(id).classList.remove('hide')}
+document.querySelectorAll('nav button[data-t]').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('nav button[data-t]').forEach(x=>x.classList.toggle('on',x===b));
+ TABS.forEach(t=>$('t-'+t).classList.toggle('hide',t!==b.dataset.t));
+ const h={grade:gradeUI,home:homeUI,mind:mindUI,board:boardUI,tutor:tutorUI,practice:practiceUI,sim:simUI,friends:renderFriends,forum:loadPosts,game:gameMenu,review:renderReview,profile:renderProfile}[b.dataset.t];h&&h();const hm=b.dataset.t==='home';$('ttl').textContent=hm?'':b.textContent.replace(/\(\d+\)/,'').trim();$('homeb').textContent=hm?'🏠 Trang chủ':'← Trang chủ';scrollTo({top:0});document.querySelectorAll('#bnav button').forEach(x=>x.classList.toggle('on',x.dataset.g===b.dataset.t))});
+const TABS=['grade','home','mind','board','tutor','solve','forum','practice','sim','friends','game','review','profile'];
+
+/* ===== Gemini ===== */
+async function loadModels(){
+ API=$('key').value.trim();if(!API)return note('keymsg','Hãy dán API key trước.','err');
+ note('keymsg','Đang tải danh sách model...');
+ try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':API}});
+  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
+  const ms=j.models.filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/gemini/i.test(m.name));
+  $('model').innerHTML=ms.map(m=>`<option value="${esc(m.name)}">${esc(m.displayName||m.name)} (${esc(m.name.replace('models/',''))})</option>`).join('');
+  const pref=ms.find(m=>/gemini-2\.5-flash$/.test(m.name))||ms[0];if(MODEL&&ms.some(m=>m.name===MODEL))$('model').value=MODEL;else if(pref)$('model').value=pref.name;
+  $('model').classList.remove('hide');$('btnConnect').classList.remove('hide');
+  note('keymsg','Tìm thấy '+ms.length+' model. Chọn một model rồi bấm Kết nối.','ok')}
+ catch(e){note('keymsg','Key không hợp lệ hoặc lỗi mạng: '+e.message,'err')}}
+async function connect(){MODEL=$('model').value;note('keymsg','Đang thử model...');
+ try{await gem('Trả lời đúng một chữ: OK');localStorage.sv_key=API;localStorage.sv_model=MODEL;route()}
+ catch(e){note('keymsg','Model này không dùng được: '+e.message+'. Hãy chọn model khác.','err')}}
+async function gem(text,sys,img,hist,gc){
+ const parts=[{text}];if(img)parts.push({inline_data:{mime_type:img.type,data:img.data}});
+ const contents=[...(hist||[]),{role:'user',parts}];
+ const body={contents};if(gc)body.generationConfig=gc;if(sys)body.systemInstruction={parts:[{text:sys}]};
+ const r=await fetch('https://generativelanguage.googleapis.com/v1beta/'+MODEL+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':API},body:JSON.stringify(body)});
+ const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
+ return(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')||'(AI không trả lời)'}
+
+/* ===== đăng nhập (Supabase Auth) ===== */
+async function route(){const{data}=await sb.auth.getSession();user=data.session?.user||null;
+ if(!API||!MODEL)return show('s-key');if(!user)return show('s-auth');show('app');ensureProfile();goTab('home')}
+async function signup(){const{error,data}=await sb.auth.signUp({email:$('em').value,password:$('pw').value,options:{data:{name:$('nm').value||$('em').value.split('@')[0]}}});
+ if(error)return note('authmsg',error.message,'err');
+ data.session?route():note('authmsg','Đã đăng ký. Kiểm tra email để xác nhận (hoặc tắt xác nhận email trong Supabase) rồi đăng nhập.','ok')}
+async function login(){const{error}=await sb.auth.signInWithPassword({email:$('em').value,password:$('pw').value});
+ error?note('authmsg','Đăng nhập thất bại: '+error.message,'err'):route()}
+async function logout(){await sb.auth.signOut();route()}
+const myName=()=>user?.user_metadata?.name||user?.email?.split('@')[0]||'Ẩn danh';
+
+/* ===== micro: không tự tắt ===== */
+let rec=null,recOn=false,recTarget='',recBtn='';
+function toggleMic(target,btn){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR)return alert('Trình duyệt chưa hỗ trợ nhận giọng nói. Hãy dùng Chrome hoặc Edge.');
+ if(recOn){recOn=false;rec&&rec.stop();$(recBtn).textContent=recBtn==='bmic'?'🎤':'🎤 Bật micro';$(recBtn).classList.remove('rec');return}
+ recTarget=target;recBtn=btn;recOn=true;$(btn).textContent='⏹ Tắt micro';$(btn).classList.add('rec');
+ const start=()=>{rec=new SR();rec.lang='vi-VN';rec.continuous=true;rec.interimResults=false;
+  rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)$(recTarget).value+=($(recTarget).value?' ':'')+e.results[i][0].transcript.trim()};
+  rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){recOn=false;$(btn).textContent='🎤';alert('Bạn chưa cho phép micro.')}};
+  rec.onend=()=>{if(recOn)setTimeout(()=>{try{start()}catch(e){}},200)}; // tự mở lại, chỉ dừng khi người dùng bấm tắt
+  rec.start()};start()}
+
+/* ===== OCR đề bằng Gemini Vision ===== */
+function toB64(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result.split(',')[1]);r.onerror=no;r.readAsDataURL(f)})}
+async function ocr(inp){const f=inp.files[0];if(!f)return;if(f.size>8e6)return note('sres','Ảnh quá lớn (tối đa 8 MB).','err');
+ note('sres','Đang đọc đề từ ảnh...');
+ try{const t=await gem('Chép lại CHÍNH XÁC đề bài toán trong ảnh bằng tiếng Việt, công thức viết bằng LaTeX trong $...$. Chỉ trả về nội dung đề, không giải. Chỗ không chắc thì ghi [?].',null,{type:f.type,data:await toB64(f)});
+  $('q').value=t.trim();note('sres','Đã nhận diện. Hãy kiểm tra và sửa đề trước khi bấm Giải.','ok')}
+ catch(e){note('sres','Không đọc được ảnh: '+e.message,'err')}inp.value=''}
+
+/* ===== Giải bài + máy tính ===== */
+function mode(m){$('pTxt').classList.toggle('hide',m!=='txt');$('pCalc').classList.toggle('hide',m!=='calc');$('mTxt').classList.toggle('alt',m!=='txt');$('mCalc').classList.toggle('alt',m!=='calc')}
+function calc(){const s=$('expr').value.trim();if(!s)return;
+ try{const v=math.evaluate(s.replace(/,/g,'.').replace(/×/g,'*').replace(/÷/g,'/'));$('calcout').textContent=s+' = '+math.format(v,{precision:12})}
+ catch(e){$('calcout').textContent='Biểu thức chưa hợp lệ: '+e.message}}
+$('expr')&&$('expr').addEventListener('keydown',e=>{if(e.key==='Enter')calc()});
+const SYS='Bạn là trợ lý Xác suất Thống kê đại học và Toán nói chung, trả lời bằng tiếng Việt. Công thức viết bằng LaTeX trong $...$. Giải theo 4 bước: (1) Phân tích đề, (2) Chọn công thức và điều kiện, (3) Tính toán, (4) Kết luận. Không bịa số liệu.';
+async function solve(){const q=$('q').value.trim();if(!q)return note('sres','Hãy nhập hoặc chụp đề bài trước.','err');
+ const lv=$('lvl').value;note('sres','Đang giải...');
+ try{const t=await gem('Mức hỗ trợ: '+lv+'. Đề:\n'+q,SYS+(lv.startsWith('Chỉ')?' Chỉ gợi ý hướng, KHÔNG đưa đáp án cuối.':''));
+  $('sres').innerHTML='<div class="out" id="ans">'+fmt(t)+'</div><button class="alt" onclick="speak(document.getElementById(\'ans\').dataset.raw)">🔊 Nghe</button><button class="alt" onclick="speechSynthesis.cancel()">⏹ Dừng đọc</button>';
+  $('ans').dataset.raw=t;mathRender($('ans'));addLog('Giải bài',null)}
+ catch(e){$('sres').innerHTML='<div class="msg err">Lỗi AI: '+esc(e.message)+'</div><button onclick="solve()">Thử lại</button>'}}
+
+/* ===== Đọc công thức bằng tiếng Việt ===== */
+function toSpeech(t){let s=t.replace(/\*\*/g,'');
+ const R=[[/\\frac\{([^{}]+)\}\{([^{}]+)\}/g,' $1 phần $2 '],[/\\sqrt\{([^{}]+)\}/g,' căn bậc hai của $1 '],[/\\bar\{?x\}?/g,' x ngang '],[/\\hat\{p\}/g,' p mũ '],
+ [/\^\{?2\}?/g,' bình phương '],[/\^\{?3\}?/g,' lập phương '],[/\^\{([^{}]+)\}/g,' mũ $1 '],[/\^(\w)/g,' mũ $1 '],[/_\{([^{}]+)\}/g,' $1 '],[/_(\w)/g,' $1 '],
+ [/\\sum/g,' tổng '],[/\\int/g,' tích phân '],[/\\infty/g,' vô cùng '],[/\\mu/g,' muy '],[/\\sigma/g,' xích ma '],[/\\lambda/g,' lam đa '],[/\\alpha/g,' an pha '],[/\\beta/g,' bê ta '],[/\\chi/g,' khi '],[/\\pi/g,' pi '],[/\\Phi/g,' phi '],[/\\theta/g,' thê ta '],
+ [/\\le(q)?\b/g,' nhỏ hơn hoặc bằng '],[/\\ge(q)?\b/g,' lớn hơn hoặc bằng '],[/\\neq/g,' khác '],[/\\approx/g,' xấp xỉ '],[/\\times|\\cdot/g,' nhân '],[/\\pm/g,' cộng trừ '],[/\\sim/g,' có phân phối '],
+ [/\\(left|right|text|mathrm)/g,' '],[/\\[a-zA-Z]+/g,' '],[/P\(/g,' xác suất của ('],[/E\(/g,' kỳ vọng của ('],[/Var\(/g,' phương sai của ('],
+ [/<=/g,' nhỏ hơn hoặc bằng '],[/>=/g,' lớn hơn hoặc bằng '],[/=/g,' bằng '],[/\+/g,' cộng '],[/(\d)\s*-\s*(\d|\()/g,'$1 trừ $2'],[/\s-\s/g,' trừ '],[/\//g,' chia '],[/%/g,' phần trăm '],[/(\d),(\d)/g,'$1 phẩy $2'],[/(\d)\.(\d)/g,'$1 phẩy $2'],
+ [/[$\\{}]/g,' '],[/\s+/g,' ']];R.forEach(([a,b])=>s=s.replace(a,b));return s.trim()}
+function speak(t){speechSynthesis.cancel();const txt=toSpeech(t);
+ const voices=speechSynthesis.getVoices();const vi=voices.find(v=>v.lang.startsWith('vi'));
+ txt.split(/(?<=[.!?\n])\s+/).filter(Boolean).forEach(p=>{const u=new SpeechSynthesisUtterance(p);u.lang='vi-VN';if(vi)u.voice=vi;u.rate=.95;speechSynthesis.speak(u)})}
+
+/* ===== Chatbot toán ===== */
+let bh=[];
+async function botSend(){const t=$('bi').value.trim();if(!t)return;$('bi').value='';
+ const log=$('botlog');log.insertAdjacentHTML('beforeend','<div class="msg">'+esc(t)+'</div>');
+ const w=document.createElement('div');w.className='msg';w.style.background='#1b2a70';w.textContent='...';log.appendChild(w);log.scrollTop=1e9;
+ try{const a=await gem(t,'Bạn là gia sư Toán thân thiện, trả lời bằng tiếng Việt, ngắn gọn, đúng và đủ cho MỌI câu hỏi liên quan đến toán (đại số, giải tích, xác suất thống kê, hình học...). Công thức viết LaTeX trong $...$. Câu hỏi ngoài toán thì từ chối lịch sự.',null,bh);
+  bh.push({role:'user',parts:[{text:t}]},{role:'model',parts:[{text:a}]});bh=bh.slice(-20);
+  w.innerHTML=fmt(a)+'<br><button class="alt" style="min-height:32px;padding:4px 10px" onclick="speak(this.parentNode.dataset.raw)">🔊 Nghe</button>';w.dataset.raw=a;mathRender(w)}
+ catch(e){w.className='msg err';w.textContent='Lỗi: '+e.message}log.scrollTop=1e9}
+
+/* ===== Diễn đàn (Supabase, thời gian thực) ===== */
+async function loadPosts(){const{data,error}=await sb.from('posts').select('*, replies(*)').order('created_at',{ascending:false}).limit(50);
+ if(error)return note('fmsg','Chưa tải được diễn đàn: '+error.message+' (đã chạy schema.sql chưa?)','err');
+ $('posts').innerHTML=data.map(p=>`<div class="post"><b>${esc(p.title)}</b> <span class="small">– ${esc(p.author)}, ${new Date(p.created_at).toLocaleString('vi-VN')}</span>
+ <div class="pbody hide out" data-id="${p.id}">${fmt(p.body)}<hr>${(p.replies||[]).map(r=>`<div class="msg"><b>${esc(r.author)}:</b> ${fmt(r.body)}</div>`).join('')}
+ <textarea placeholder="Trả lời..." id="r${p.id}"></textarea><button onclick="reply(${p.id})">Gửi trả lời</button>${p.user_id===user.id?`<button class="alt" onclick="delPost(${p.id})">Xóa bài</button>`:''}</div>
+ <button class="alt" aria-expanded="false" onclick="const b=this.previousElementSibling;b.classList.toggle('hide');this.setAttribute('aria-expanded',!b.classList.contains('hide'));this.textContent=b.classList.contains('hide')?'▼ Mở rộng (${(p.replies||[]).length} trả lời)':'▲ Thu gọn';">▼ Mở rộng (${(p.replies||[]).length} trả lời)</button></div>`).join('')||'<p>Chưa có bài nào. Hãy đăng câu hỏi đầu tiên!</p>';
+ mathRender($('posts'))}
+async function newPost(){const title=$('pt').value.trim(),body=$('pb').value.trim();if(title.length<3||!body)return note('fmsg','Cần tiêu đề (≥3 ký tự) và nội dung.','err');
+ const{error}=await sb.from('posts').insert({user_id:user.id,author:myName(),title,body});
+ if(error)return note('fmsg',error.message,'err');$('pt').value=$('pb').value='';note('fmsg','Đã đăng.','ok');loadPosts()}
+async function reply(id){const body=$('r'+id).value.trim();if(!body)return;
+ const{error}=await sb.from('replies').insert({post_id:id,user_id:user.id,author:myName(),body});error?note('fmsg',error.message,'err'):loadPosts()}
+async function delPost(id){if(confirm('Xóa bài này?')){await sb.from('posts').delete().eq('id',id);loadPosts()}}
+sb.channel('forum').on('postgres_changes',{event:'*',schema:'public'},()=>{if(!$('t-forum').classList.contains('hide'))loadPosts()}).subscribe();
+
+/* ===== Nhật ký học tập ===== */
+const getLog=()=>{try{return JSON.parse(localStorage.sv_log||'[]')}catch(e){return[]}};
+function addLog(topic,ok){const l=getLog();l.push({t:Date.now(),topic,ok});localStorage.sv_log=JSON.stringify(l.slice(-500))}
+
+/* ===== Xúc sắc SVG ===== */
+const PIP={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],6:[[30,26],[30,50],[30,74],[70,26],[70,50],[70,74]]};
+function dieSVG(n,cls=''){return `<svg class="dice ${cls}" viewBox="0 0 100 100" role="img" aria-label="Xúc xắc ${n}"><defs><linearGradient id="dg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#c7d2e6"/></linearGradient><radialGradient id="pg" cx=".35" cy=".3"><stop offset="0" stop-color="#6b7280"/><stop offset="1" stop-color="#0f172a"/></radialGradient></defs><rect x="4" y="4" width="92" height="92" rx="19" fill="url(#dg)" stroke="#94a3b8" stroke-width="2"/><rect x="9" y="9" width="82" height="82" rx="15" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>${PIP[n].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="url(#pg)"/><circle cx="${x-3}" cy="${y-3}" r="2.5" fill="#fff" fill-opacity=".6"/>`).join('')}</svg>`}
+
+/* ===== Biểu đồ cột SVG ===== */
+function bars(items,{max,pct=false,h=180}={}){const w=Math.max(items.length*44,300),m=max||Math.max(1,...items.map(i=>Math.max(i.v,i.ref||0)));
+ const bw=28,top=14,bot=h-26;let o=`<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px;min-width:300px" role="img">`;
+ [0,.5,1].forEach(f=>{const y=bot-(bot-top)*f;o+=`<line x1="0" x2="${w}" y1="${y}" y2="${y}" stroke="#5b6aa8" stroke-opacity=".4"/><text x="2" y="${y-2}" fill="#E2E8F0" font-size="10">${pct?Math.round(m*f*100)+'%':Math.round(m*f*10)/10}</text>`});
+ items.forEach((i,k)=>{const x=k*44+12,bh=(bot-top)*i.v/m;o+=`<rect x="${x}" y="${bot-bh}" width="${bw}" height="${bh}" rx="5" fill="${i.c||'#38BDF8'}"/><text x="${x+bw/2}" y="${h-10}" fill="#E2E8F0" font-size="11" text-anchor="middle">${esc(i.l)}</text>`;
+  if(i.ref!=null){const y=bot-(bot-top)*i.ref/m;o+=`<line x1="${x-4}" x2="${x+bw+4}" y1="${y}" y2="${y}" stroke="#F472B6" stroke-width="3"/>`}});
+ return o+'</svg>'}
+
+/* ===== Trò chơi ===== */
+let G={};
+function gameMenu(){G={};$('gbox').innerHTML=`<p>Chọn một trò chơi. Kết quả được ghi vào mục Ôn tập.</p>
+ <button onclick="diceStart()">🎲 Đoán tổng 2 xúc xắc</button><button onclick="quickStart()">⚡ Trạm tính nhanh (Nhị thức / Poisson)</button>`}
+const WAYS=s=>6-Math.abs(s-7);
+function diceStart(){G={g:'dice',round:0,score:0,guess:null,freq:Array(13).fill(0),busy:false};diceUI()}
+function diceUI(msg=''){const f=G.freq,n=G.round;
+ $('gbox').innerHTML=`<button class="alt" onclick="gameMenu()">← Quay lại menu</button><h3>Đoán tổng 2 xúc xắc – lượt ${Math.min(n+1,10)}/10 · Điểm: ${G.score}</h3>
+ <div id="dz">${dieSVG(G.d1||1)}${dieSVG(G.d2||1)}</div>
+ <p>Bạn đoán tổng bằng:</p><div class="gb">${[2,3,4,5,6,7,8,9,10,11,12].map(k=>`<button class="${G.guess===k?'sel':'alt'}" onclick="G.guess=${k};diceUI()">${k}</button>`).join('')}</div>
+ <button id="rb" onclick="diceRoll()" ${n>=10?'disabled':''}>🎲 Tung xúc xắc</button><div id="dmsg">${msg}</div>
+ ${n?`<h3>Tần suất tổng (cột) so với xác suất lý thuyết (vạch hồng)</h3><div style="overflow-x:auto">${bars([2,3,4,5,6,7,8,9,10,11,12].map(k=>({l:k,v:f[k]/n,ref:WAYS(k)/36})),{max:.5,pct:true})}</div>`:''}
+ ${n>=10?`<div class="msg ok">Hết 10 lượt! Điểm của bạn: ${G.score}. Bạn có thấy tần suất tiến gần xác suất lý thuyết khi tung nhiều lần không?</div><button onclick="diceStart()">Chơi lại</button>`:''}`}
+function diceRoll(){if(G.busy||!G.guess)return G.guess?0:$('dmsg').innerHTML='<div class="msg err">Hãy chọn tổng bạn đoán trước.</div>';
+ G.busy=true;$('rb').disabled=true;let i=0;const r=()=>1+Math.floor(Math.random()*6);
+ const iv=setInterval(()=>{$('dz').innerHTML=dieSVG(r(),'roll')+dieSVG(r(),'roll');if(++i>9){clearInterval(iv);fin()}},90);
+ function fin(){const a=r(),b=r(),s=a+b,hit=s===G.guess;G.d1=a;G.d2=b;G.freq[s]++;G.round++;G.busy=false;const pts=hit?Math.round(36/WAYS(s)):0;G.score+=pts;
+  addLog('Xúc sắc – xác suất',hit);
+  diceUI(`<div class="msg ${hit?'ok':''}">Ra ${a} + ${b} = <b>${s}</b>. ${hit?'Đoán đúng! +'+pts+' điểm.':'Chưa đúng.'} Xác suất lý thuyết P(tổng = ${s}) = ${WAYS(s)}/36 ≈ ${(WAYS(s)/36*100).toFixed(1)}%.</div>`);G.guess=null}}
+
+function quickStart(){G={g:'quick',score:0,streak:0};quickNext()}
+function quickNext(){const bi=Math.random()<.6;let q;
+ if(bi){const n=5+Math.floor(Math.random()*8),k=1+Math.floor(Math.random()*(n-1)),p=[.2,.3,.4,.5,.6][Math.floor(Math.random()*5)];
+  q={topic:'Phân phối nhị thức',txt:`$X\\sim B(${n};${p})$. Tính $P(X=${k})$.`,ans:math.combinations(n,k)*p**k*(1-p)**(n-k),sol:`$P(X=k)=C_n^k p^k(1-p)^{n-k}=C_{${n}}^{${k}}\\cdot ${p}^{${k}}\\cdot ${+(1-p).toFixed(1)}^{${n-k}}$`}}
+ else{const l=[1,2,3,4][Math.floor(Math.random()*4)],k=Math.floor(Math.random()*5);
+  q={topic:'Phân phối Poisson',txt:`$X\\sim P(${l})$. Tính $P(X=${k})$.`,ans:Math.exp(-l)*l**k/math.factorial(k),sol:`$P(X=k)=\\dfrac{e^{-\\lambda}\\lambda^k}{k!}=\\dfrac{e^{-${l}}\\cdot ${l}^{${k}}}{${k}!}$`}}
+ G.q=q;$('gbox').innerHTML=`<button class="alt" onclick="gameMenu()">← Quay lại menu</button><h3>Trạm tính nhanh · Điểm ${G.score} · Chuỗi đúng ${G.streak}</h3>
+ <div class="out" id="qt">${q.txt}</div><p class="small">Làm tròn 4 chữ số thập phân (có thể dùng tab "＝ Máy tính" trong Giải bài).</p>
+ <input id="qa" class="mono" inputmode="decimal" placeholder="Đáp số, ví dụ 0.2508" onkeydown="if(event.key==='Enter')quickCheck()"><button onclick="quickCheck()">Kiểm tra</button><div id="qr"></div>`;mathRender($('qt'))}
+function quickCheck(){const v=parseFloat($('qa').value.replace(',','.'));if(isNaN(v))return $('qr').innerHTML='<div class="msg err">Hãy nhập một số.</div>';
+ const ok=Math.abs(v-G.q.ans)<0.0006;addLog(G.q.topic,ok);G.score+=ok?10:0;G.streak=ok?G.streak+1:0;
+ $('qr').innerHTML=`<div class="msg ${ok?'ok':'err'}">${ok?'Chính xác! +10 điểm.':'Chưa đúng.'} Đáp số: <b>${G.q.ans.toFixed(4)}</b></div><div class="out" id="qs">${G.q.sol}</div><button onclick="quickNext()">Câu tiếp theo</button>`;mathRender($('qs'))}
+
+/* ===== Ôn tập ===== */
+function renderReview(){const L=getLog();if(!L.length){$('rbox').innerHTML='<div class="msg">Chưa có dữ liệu. Hãy giải bài hoặc chơi một trò chơi để bắt đầu theo dõi tiến độ.</div><button onclick="document.querySelector(\'[data-t=game]\').click()">Đến Trò chơi</button>';return}
+ const by={};L.filter(x=>typeof x.ok==='boolean').forEach(x=>{(by[x.topic]=by[x.topic]||{a:0,n:0});by[x.topic].n++;if(x.ok)by[x.topic].a++});
+ const tp=Object.entries(by).map(([k,v])=>({l:k.replace(/^.* – /,'').slice(0,7),full:k,v:v.a/v.n,n:v.n,c:v.a/v.n<.5?'#F472B6':v.a/v.n<.8?'#FBBF24':'#34D399'}));
+ const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6+i);return{d,l:(d.getDate())+'/'+(d.getMonth()+1),v:0}});
+ L.forEach(x=>{const d=new Date(x.t);d.setHours(0,0,0,0);const o=days.find(y=>+y.d===+d);if(o)o.v++});
+ const weak=tp.filter(t=>t.n>=2).sort((a,b)=>a.v-b.v)[0],tot=L.filter(x=>typeof x.ok==='boolean'),ok=tot.filter(x=>x.ok).length;
+ $('rbox').innerHTML=`<div class="msg">Tổng hoạt động: <b>${L.length}</b> · Câu có chấm đúng/sai: <b>${tot.length}</b> · Tỉ lệ đúng: <b>${tot.length?Math.round(ok/tot.length*100):0}%</b></div>
+ <h3>Tỉ lệ đúng theo chủ đề</h3><div style="overflow-x:auto">${tp.length?bars(tp,{max:1,pct:true}):'<p>Chưa có câu nào được chấm.</p>'}</div>
+ <p class="small">${tp.map(t=>esc(t.full)+': '+Math.round(t.v*100)+'% ('+t.n+' câu)').join(' · ')}</p>
+ <h3>Hoạt động 7 ngày gần nhất</h3><div style="overflow-x:auto">${bars(days.map(d=>({l:d.l,v:d.v,c:'#A78BFA'})),{})}</div>
+ ${weak?`<div class="msg">Chủ đề cần ôn: <b>${esc(weak.full)}</b> (${Math.round(weak.v*100)}%). <button onclick="document.querySelector('[data-t=game]').click()">Luyện ngay</button></div>`:''}
+ <h3>10 hoạt động gần nhất</h3>${L.slice(-10).reverse().map(x=>`<div class="small">${new Date(x.t).toLocaleString('vi-VN')} – ${esc(x.topic)} ${x.ok===true?'✅':x.ok===false?'❌':''}</div>`).join('')}
+ <button class="alt" onclick="if(confirm('Xóa toàn bộ nhật ký?')){localStorage.removeItem('sv_log');renderReview()}">Xóa nhật ký</button>`}
+
+/* ===== Avatar SVG & hồ sơ ===== */
+const AV=[{n:'Mèo',c:'#F59E0B',e:'t',x:'#FDE68A'},{n:'Gấu',c:'#A16207',e:'r',x:'#FCD9A0'},{n:'Cáo',c:'#EA580C',e:'t',x:'#FFF'},{n:'Thỏ',c:'#E5E7EB',e:'l',x:'#FBCFE8'},{n:'Cánh cụt',c:'#1E293B',e:'n',x:'#FFF'},{n:'Rái cá',c:'#92400E',e:'r',x:'#D6B38A'}];
+function avSVG(i,sz=48){const a=AV[i%AV.length];let ears='';
+ if(a.e==='t')ears=`<path d="M18 40L22 8L44 28Z M82 40L78 8L56 28Z" fill="${a.c}"/><path d="M24 30L25 16L36 26Z M76 30L75 16L64 26Z" fill="${a.x}"/>`;
+ if(a.e==='r')ears=`<circle cx="24" cy="24" r="12" fill="${a.c}"/><circle cx="76" cy="24" r="12" fill="${a.c}"/><circle cx="24" cy="24" r="6" fill="${a.x}"/><circle cx="76" cy="24" r="6" fill="${a.x}"/>`;
+ if(a.e==='l')ears=`<ellipse cx="34" cy="16" rx="9" ry="22" fill="${a.c}"/><ellipse cx="66" cy="16" rx="9" ry="22" fill="${a.x}" stroke="${a.c}" stroke-width="3"/><ellipse cx="34" cy="16" rx="4" ry="15" fill="${a.x}"/>`;
+ return `<svg width="${sz}" height="${sz}" viewBox="0 0 100 100" role="img" aria-label="${a.n}" style="vertical-align:middle"><circle cx="50" cy="50" r="48" fill="#1e2a6b" stroke="#38BDF8" stroke-width="3"/>${ears}<circle cx="50" cy="58" r="32" fill="${a.c}"/><ellipse cx="50" cy="68" rx="18" ry="13" fill="${a.x}"/><circle cx="38" cy="52" r="5" fill="#111"/><circle cx="62" cy="52" r="5" fill="#111"/><circle cx="39.5" cy="50.5" r="1.8" fill="#fff"/><circle cx="63.5" cy="50.5" r="1.8" fill="#fff"/><ellipse cx="50" cy="63" rx="5" ry="3.5" fill="${a.e==='n'?'#F59E0B':'#3b1d12'}"/><path d="M44 71Q50 76 56 71" stroke="#3b1d12" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`}
+const myAv=()=>+(localStorage.sv_av||0);
+function renderProfile(){$('pbox').innerHTML=`<div style="text-align:center">${avSVG(myAv(),96)}<h3>${esc(myName())}</h3><div class="small">${esc(user?.email||'')}</div></div><p>Chọn avatar:</p><div class="avs">${AV.map((a,i)=>`<button class="${i===myAv()?'sel':''}" title="${a.n}" onclick="localStorage.sv_av=${i};renderProfile();navAv();syncAv()">${avSVG(i,56)}</button>`).join('')}</div><p class="small">Mã bạn bè, QR và chat nằm ở mục Bạn bè.</p>`}
+function navAv(){$('navav').innerHTML=avSVG(myAv(),22)}
+navAv();
+
+/* ===== Bạn bè, QR, chat 1-1 ===== */
+let ME=null,PROF={},chatWith=null;const PENDING=(location.pathname.match(/\/profile\/([0-9a-f-]{36})/i)||[])[1];
+const slug=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12)||'user';
+async function ensureProfile(){let{data}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+ for(let i=0;i<5&&!data;i++){const r=await sb.from('profiles').insert({id:user.id,handle:'@'+slug(myName())+'#'+(1000+Math.floor(Math.random()*9000)),name:myName(),avatar:myAv()}).select().single();if(!r.error)data=r.data}
+ {const t=await sb.from('teachers').select('user_id').eq('user_id',user.id).maybeSingle();TEACHER=!!t.data}
+ ME=data;if(ME&&ME.avatar!==myAv()&&localStorage.sv_av!==undefined)syncAv();
+ if(PENDING){document.querySelector('[data-t=friends]').click();showProfile(PENDING);history.replaceState({},'','/')}}
+async function syncAv(){if(ME)await sb.from('profiles').update({avatar:myAv()}).eq('id',user.id)}
+function qrSVG(text){const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount(),m=4,t=n+2*m;let d='';
+ for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
+ return `<svg id="qrsvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${t} ${t}" width="240" height="240" shape-rendering="crispEdges" style="display:block;background:#fff"><rect width="${t}" height="${t}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`}
+function dlQR(){const svg=$('qrsvg').outerHTML.replace('width="240" height="240"','width="720" height="720"');const im=new Image();
+ im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=720;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,720,720);x.drawImage(im,0,0,720,720);const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='statverse-qr.png';a.click()};
+ im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
+async function copyTxt(t){try{await navigator.clipboard.writeText(t);toast('Đã sao chép')}catch(e){prompt('Hãy sao chép thủ công:',t)}}
+function toast(t){const d=document.createElement('div');d.className='msg ok';d.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:50';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+const prow=(p,btns)=>`<div class="msg" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${avSVG(p.avatar||0,40)}<span><b>${esc(p.name)}</b><br><span class="small">${esc(p.handle)}</span></span><span style="margin-left:auto">${btns}</span></div>`;
+async function renderFriends(){if(!ME)return $('frbox').innerHTML='<div class="msg">Đang tạo hồ sơ... hãy thử lại sau vài giây. Nếu vẫn lỗi, hãy chạy schema_friends.sql trong Supabase.</div>';
+ const me=user.id,{data:fs,error}=await sb.from('friendships').select('*').or(`requester.eq.${me},addressee.eq.${me}`);
+ if(error)return $('frbox').innerHTML=`<div class="msg err">${esc(error.message)}</div>`;
+ const oid=f=>f.requester===me?f.addressee:f.requester,ids=[...new Set(fs.map(oid))];PROF={};
+ if(ids.length){const r=await sb.from('profiles').select('*').in('id',ids);(r.data||[]).forEach(p=>PROF[p.id]=p)}
+ const P=f=>PROF[oid(f)]||{name:'?',handle:'',avatar:0},link=location.origin+'/profile/'+me;
+ const inc=fs.filter(f=>f.status==='pending'&&f.addressee===me),out=fs.filter(f=>f.status==='pending'&&f.requester===me),fr=fs.filter(f=>f.status==='accepted');
+ $('frbox').innerHTML=`<div class="out" style="text-align:center">${avSVG(ME.avatar,64)}<br>Mã của bạn: <b class="mono">${esc(ME.handle)}</b> <button class="alt" onclick="copyTxt('${esc(ME.handle)}')">Sao chép mã</button>
+  <br><button class="alt" onclick="copyTxt('${link}')">Sao chép link cá nhân</button>
+  <div style="display:inline-block;margin:10px;padding:0;background:#fff;border-radius:0">${qrSVG(link)}</div><br><button class="alt" onclick="dlQR()">Tải mã QR (PNG)</button>
+  <div class="small">Mở Google Lens hoặc Camera điện thoại, quét mã để tới hồ sơ và kết bạn.</div></div>
+  <h3>Tìm bạn</h3><input id="fs" placeholder="Gõ mã, ví dụ @anbinh#2026" onkeydown="if(event.key==='Enter')findUser()"><button onclick="findUser()">Tìm</button><div id="fres"></div>
+  ${inc.length?'<h3>Lời mời kết bạn</h3>'+inc.map(f=>prow(P(f),`<button onclick="acc(${f.id})">Chấp nhận</button><button class="alt" onclick="delFr(${f.id})">Từ chối</button>`)).join(''):''}
+  <h3>Bạn bè (${fr.length})</h3>${fr.map(f=>prow(P(f),`<button onclick="openChat('${oid(f)}')">💬 Chat</button><button class="alt" onclick="if(confirm('Hủy kết bạn?'))delFr(${f.id})">Hủy</button>`)).join('')||'<p class="small">Chưa có bạn. Hãy tìm bằng mã hoặc chia sẻ mã QR.</p>'}
+  ${out.length?'<h3>Đã gửi lời mời</h3>'+out.map(f=>prow(P(f),`<button class="alt" onclick="delFr(${f.id})">Hủy lời mời</button>`)).join(''):''}`;
+ window.FRS=fs;updBadge(inc.length)}
+const updBadge=n=>$('badge').textContent=n?'('+n+')':'';
+async function findUser(){const q=$('fs').value.trim().replace(/[%_]/g,'');if(q.length<2)return;
+ const{data,error}=await sb.from('profiles').select('*').ilike('handle',q+'%').neq('id',user.id).limit(8);
+ $('fres').innerHTML=error?`<div class="msg err">${esc(error.message)}</div>`:(data.map(p=>prow(p,`<button onclick="addFr('${p.id}')">Kết bạn</button>`)).join('')||'<div class="msg">Không tìm thấy mã này.</div>')}
+async function showProfile(id){if(!ME)await ensureProfile();const{data}=await sb.from('profiles').select('*').eq('id',id).maybeSingle();await renderFriends();
+ $('fres').innerHTML=data?(data.id===user.id?'<div class="msg">Đây là hồ sơ của bạn.</div>':prow(data,`<button onclick="addFr('${data.id}')">Kết bạn</button>`)):'<div class="msg err">Không tìm thấy hồ sơ.</div>'}
+async function addFr(id){if((window.FRS||[]).some(f=>f.requester===id||f.addressee===id))return toast('Bạn đã gửi hoặc nhận lời mời với người này.');
+ const{error}=await sb.from('friendships').insert({requester:user.id,addressee:id});error?toast('Lỗi: '+error.message):(toast('Đã gửi lời mời'),renderFriends())}
+async function acc(id){await sb.from('friendships').update({status:'accepted'}).eq('id',id);renderFriends()}
+async function delFr(id){await sb.from('friendships').delete().eq('id',id);renderFriends()}
+/* chat */
+async function openChat(id){chatWith=id;const p=PROF[id]||{name:'Bạn',avatar:0};
+ $('chat').innerHTML=`<hr><button class="alt" onclick="chatWith=null;$('chat').innerHTML=''">← Đóng chat</button><h3>${avSVG(p.avatar,32)} ${esc(p.name)}</h3><div id="cl" class="out" style="height:300px;overflow:auto"></div>
+ <div style="display:flex;gap:4px"><input id="ci" maxlength="1000" placeholder="Nhắn tin... (Ctrl+V để dán ảnh)" onkeydown="if(event.key==='Enter')sendMsg()" onpaste="pasteImg(event)"><button class="alt" onclick="$('cf').click()">🖼</button><button onclick="sendMsg()">Gửi</button></div><input id="cf" type="file" accept="image/*" class="hide" onchange="sendImg(this.files[0]);this.value=''">`;loadChat()}
+async function loadChat(){if(!chatWith)return;const a=user.id,b=chatWith;
+ const{data}=await sb.from('messages').select('*').or(`and(sender.eq.${a},receiver.eq.${b}),and(sender.eq.${b},receiver.eq.${a})`).order('created_at').limit(100);
+ const el=$('cl');if(!el)return;el.innerHTML=(data||[]).map(m=>{const mine=m.sender===a,img=/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(m.body);
+  return `<div style="text-align:${mine?'right':'left'}"><span class="msg" style="display:inline-block;max-width:80%;background:${mine?'#1d4ed8':'#27337a'}">${img?`<img src="${m.body}" style="max-width:100%;border-radius:8px;cursor:zoom-in" onclick="window.open(this.src)">`:fmt(m.body)}</span></div>`}).join('');
+ mathRender(el);el.scrollTop=1e9}
+async function sendMsg(){const t=$('ci').value.trim();if(!t||!chatWith)return;$('ci').value='';await post1(t)}
+async function post1(body){const{error}=await sb.from('messages').insert({sender:user.id,receiver:chatWith,body});error?toast('Không gửi được: '+error.message):loadChat()}
+function sendImg(f){if(!f||!chatWith||!f.type.startsWith('image/'))return toast('Chỉ gửi được ảnh.');const im=new Image();
+ im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);post1(c.toDataURL('image/jpeg',.7))};im.src=URL.createObjectURL(f)}
+function pasteImg(e){const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){e.preventDefault();sendImg(it.getAsFile())}}
+sb.channel('dm').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},e=>{const m=e.new;if(!user)return;
+ if(chatWith&&(m.sender===chatWith||m.receiver===chatWith))loadChat();else if(m.receiver===user.id)toast('💬 Có tin nhắn mới')})
+ .on('postgres_changes',{event:'*',schema:'public',table:'friendships'},()=>{if(user&&!$('t-friends').classList.contains('hide'))renderFriends();else if(user)toast('👥 Có cập nhật bạn bè')}).subscribe();
+
+/* ===== Diễn đàn: thanh ký hiệu, xem trước, dán ảnh ===== */
+const SYM=[['x̄','\\bar{x}'],['μ','\\mu'],['σ','\\sigma'],['σ²','\\sigma^2'],['p̂','\\hat{p}'],['Σ','\\sum_{i=1}^{n}'],['√','\\sqrt{}'],['a/b','\\frac{}{}'],['P( )','P()'],['χ²','\\chi^2'],['≤','\\le'],['≥','\\ge'],['α','\\alpha'],['∼','\\sim'],['Φ','\\Phi'],['H₀','H_0']];
+$('symbar').innerHTML=SYM.map(([l,c],i)=>`<button class="alt" style="padding:4px 10px;min-height:34px" onclick="insSym(${i})">${l}</button>`).join('');
+function insSym(i){const t=$('pb'),c='$'+SYM[i][1]+'$',a=t.selectionStart;t.value=t.value.slice(0,a)+c+t.value.slice(t.selectionEnd);t.focus();t.selectionStart=t.selectionEnd=a+c.length;prevPost()}
+let pvT;function prevPost(){clearTimeout(pvT);pvT=setTimeout(()=>{$('ppv').innerHTML=fmt($('pb').value);mathRender($('ppv'))},250)}
+function pastePost(e){const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(!it)return;e.preventDefault();const im=new Image();
+ im.onload=()=>{const k=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  const d=c.toDataURL('image/jpeg',.6);if(d.length>250000)return note('fmsg','Ảnh quá lớn, hãy cắt nhỏ lại.','err');$('pb').value+='\n[[img:'+d+']]\n';prevPost()};im.src=URL.createObjectURL(it.getAsFile())}
+
+/* ===== Bài tập tương tự ===== */
+const CH=['Biến cố và xác suất','Biến ngẫu nhiên một chiều','Các phân phối xác suất thường gặp','Vectơ ngẫu nhiên','Luật số lớn và định lý giới hạn','Ước lượng tham số','Kiểm định giả thuyết'];
+let PR=[];
+function practiceUI(){$('prbox').innerHTML=`<select id="pch">${CH.map((c,i)=>`<option>${i+1}. ${c}</option>`).join('')}</select><select id="plv"><option>Cơ bản</option><option>Vận dụng</option><option>Nâng cao</option></select>
+ <button onclick="genPractice()">Sinh 5 bài tương tự</button><p class="small">AI chỉ đưa chiến lược giải, không đưa lời giải. Bạn tự làm rồi nộp đáp số để nhận phản hồi.</p><div id="prlist"></div>`;if(PR.length)showPR()}
+async function genPractice(){note('prlist','AI đang soạn 5 bài...');const c=$('pch').value,l=$('plv').value;
+ try{const t=await gem(`Chủ đề: ${c}. Mức: ${l}. Soạn ĐÚNG 5 bài tập tự luận xác suất thống kê đại học, thay đổi số liệu và ngữ cảnh, đủ dữ kiện, không mâu thuẫn, mức khó tăng dần. Tự tính kỹ đáp số trước khi trả về (xác suất thuộc [0,1], phương sai không âm). Trả về JSON mảng 5 phần tử {"q":"đề, công thức LaTeX trong $...$","strategy":"chiến lược: dạng bài, kiến thức, các bước định hướng, lỗi thường gặp; KHÔNG viết lời giải, KHÔNG nêu đáp số","answer":"đáp số cuối"}. Trong JSON, ký tự \\ của LaTeX phải viết thành \\\\.`,'Bạn là giảng viên Xác suất Thống kê. Chỉ trả JSON hợp lệ.',null,null,{responseMimeType:'application/json'});
+  PR=JSON.parse(t.replace(/^```json|```$/g,'').trim()).slice(0,5).map(x=>({q:String(x.q),st:String(x.strategy),an:String(x.answer),fb:''}));showPR()}
+ catch(e){$('prlist').innerHTML='<div class="msg err">Không sinh được bài: '+esc(e.message)+'</div><button onclick="genPractice()">Thử lại</button>'}}
+function showPR(){$('prlist').innerHTML=PR.map((p,i)=>`<div class="out"><b>Bài ${i+1}.</b> <span id="pq${i}">${fmt(p.q)}</span>
+ <details><summary>💡 Chiến lược giải</summary><div id="ps${i}">${fmt(p.st)}</div></details>
+ <input id="pa${i}" placeholder="Đáp số của bạn"><button onclick="chkPR(${i})">Nộp &amp; nhận phản hồi</button><button class="alt" onclick="if(confirm('Xem đáp án sẽ được ghi vào nhật ký là đã xem. Tiếp tục?')){PR[${i}].fb+='<div class=msg>Đáp án: '+PR[${i}].an+'</div>';addLog('Bài tương tự (xem đáp án)',null);showPR()}">Xem đáp án</button><div id="pf${i}">${p.fb}</div></div>`).join('')+'<button onclick="genPractice()">Sinh bộ 5 bài mới</button>';mathRender($('prlist'))}
+async function chkPR(i){const a=$('pa'+i).value.trim();if(!a)return;const p=PR[i];$('pf'+i).innerHTML='<div class="msg">Đang chấm...</div>';
+ try{const t=await gem(`Đề: ${p.q}\nĐáp án chuẩn: ${p.an}\nĐáp số của người học: ${a}\nDòng đầu chỉ ghi ĐÚNG hoặc SAI (chấp nhận sai số làm tròn nhỏ). Sau đó nhận xét ngắn: nếu sai, chỉ ra hướng/bước cần xem lại, KHÔNG nêu đáp án chuẩn và không viết lời giải đầy đủ.`,'Bạn là gia sư chấm công bằng, tiếng Việt, LaTeX trong $...$.');
+  const ok=/^\W*ĐÚNG/i.test(t);addLog('Bài tương tự',ok);p.fb=`<div class="msg ${ok?'ok':'err'}">${fmt(t)}</div>`;$('pf'+i).innerHTML=p.fb;mathRender($('pf'+i))}
+ catch(e){$('pf'+i).innerHTML='<div class="msg err">Lỗi: '+esc(e.message)+'</div>'}}
+
+/* ===== Đồ thị mô phỏng ===== */
+const rnd=()=>Math.random(),Phi=z=>.5*(1+math.erf(z/Math.SQRT2));
+function simUI(){$('simbox').innerHTML=`<div><button onclick="simLLN()">Luật số lớn (tung đồng xu)</button><button onclick="simCLT()">Định lý giới hạn trung tâm</button><button onclick="simNorm()">Phân phối chuẩn</button></div><div id="simarea"></div>`;simLLN()}
+function simLLN(){$('simarea').innerHTML=`<p>Xác suất mặt ngửa p: <input id="lp" type="range" min="0.05" max="0.95" step="0.05" value="0.5" oninput="runLLN()" style="width:200px"> <b id="lpv">0.5</b> · Số lần tung: <select id="ln" onchange="runLLN()"><option>100</option><option selected>1000</option><option>5000</option></select> <button onclick="runLLN()">Chạy lại</button></p><div id="lchart" style="overflow-x:auto"></div><div id="lnote" class="msg"></div>`;runLLN()}
+function runLLN(){const p=+$('lp').value,n=+$('ln').value;$('lpv').textContent=p;let h=0,pts=[];const step=Math.max(1,Math.floor(n/200));
+ for(let i=1;i<=n;i++){if(rnd()<p)h++;if(i%step===0||i===n)pts.push([i,h/i])}
+ const W=620,H=220,X=i=>40+(W-60)*i/n,Y=v=>H-24-(H-44)*v;
+ $('lchart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:320px"><line x1="40" x2="${W-10}" y1="${Y(p)}" y2="${Y(p)}" stroke="#F472B6" stroke-width="2" stroke-dasharray="6"/><polyline fill="none" stroke="#38BDF8" stroke-width="2" points="${pts.map(([i,v])=>X(i)+','+Y(v)).join(' ')}"/>${[0,.5,1].map(v=>`<text x="2" y="${Y(v)+4}" fill="#E2E8F0" font-size="11">${v}</text>`).join('')}<text x="40" y="${H-6}" fill="#E2E8F0" font-size="11">0</text><text x="${W-40}" y="${H-6}" fill="#E2E8F0" font-size="11">${n} lần tung</text></svg>`;
+ $('lnote').innerHTML=`Tần suất cuối: <b>${(h/n).toFixed(4)}</b> so với p = ${p} (vạch hồng). Số lần tung càng nhiều, tần suất càng sát xác suất.`}
+function hist(v,bins,lo,hi,col='#A78BFA'){const c=Array(bins).fill(0),w=(hi-lo)/bins;v.forEach(x=>{const k=Math.min(bins-1,Math.max(0,Math.floor((x-lo)/w)));c[k]++});const m=Math.max(...c),W=620,H=220,bw=(W-60)/bins;
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:320px">${c.map((k,i)=>`<rect x="${40+i*bw}" y="${H-24-(H-44)*k/m}" width="${bw-1}" height="${(H-44)*k/m}" fill="${col}"/>`).join('')}<text x="40" y="${H-6}" fill="#E2E8F0" font-size="11">${lo.toFixed(1)}</text><text x="${W-50}" y="${H-6}" fill="#E2E8F0" font-size="11">${hi.toFixed(1)}</text></svg>`}
+function simCLT(){$('simarea').innerHTML=`<p>Phân phối gốc: <select id="cd" onchange="runCLT()"><option value="u">Đều U(0;1)</option><option value="e">Mũ (λ=1)</option><option value="d">Xúc xắc</option></select> Cỡ mẫu n: <select id="cn" onchange="runCLT()"><option>1</option><option>2</option><option selected>5</option><option>30</option></select> <button onclick="runCLT()">Chạy lại</button></p><div id="cchart" style="overflow-x:auto"></div><div id="cnote" class="msg"></div>`;runCLT()}
+function runCLT(){const d=$('cd').value,n=+$('cn').value,g={u:()=>rnd(),e:()=>-Math.log(1-rnd()),d:()=>1+Math.floor(rnd()*6)},m=[];
+ for(let i=0;i<3000;i++){let s=0;for(let j=0;j<n;j++)s+=g[d]();m.push(s/n)}
+ const mu=m.reduce((a,b)=>a+b)/m.length,sd=Math.sqrt(m.reduce((a,b)=>a+(b-mu)**2,0)/m.length);
+ $('cchart').innerHTML=hist(m,30,Math.min(...m),Math.max(...m));
+ $('cnote').innerHTML=`Biểu đồ trung bình mẫu của 3000 mẫu cỡ n = ${n}: trung bình ≈ <b>${mu.toFixed(3)}</b>, độ lệch chuẩn ≈ <b>${sd.toFixed(3)}</b>. Tăng n thì hình dạng càng gần chuông chuẩn và độ lệch chuẩn giảm theo σ/√n.`}
+function simNorm(){$('simarea').innerHTML=`<p>μ <input id="nm1" type="range" min="-5" max="5" step="0.5" value="0" oninput="runNorm()"> σ <input id="ns" type="range" min="0.5" max="3" step="0.1" value="1" oninput="runNorm()"><br>a <input id="na" type="range" min="-10" max="10" step="0.5" value="-1" oninput="runNorm()"> b <input id="nb" type="range" min="-10" max="10" step="0.5" value="1" oninput="runNorm()"></p><div id="nchart" style="overflow-x:auto"></div><div id="nnote" class="msg"></div>`;runNorm()}
+function runNorm(){const mu=+$('nm1').value,sg=+$('ns').value;let a=+$('na').value,b=+$('nb').value;if(a>b)[a,b]=[b,a];
+ const lo=-12,hi=12,W=620,H=220,X=x=>40+(W-60)*(x-lo)/(hi-lo),f=x=>Math.exp(-(((x-mu)/sg)**2)/2)/(sg*Math.sqrt(2*Math.PI)),Y=v=>H-24-(H-44)*v/.8;
+ let all='',sh='';for(let x=lo;x<=hi;x+=.1){all+=X(x)+','+Y(f(x))+' '}for(let x=a;x<=b+1e-9;x+=.05)sh+=X(x)+','+Y(f(x))+' ';
+ $('nchart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:320px"><polygon points="${X(a)},${Y(0)} ${sh}${X(b)},${Y(0)}" fill="#38BDF8" fill-opacity=".45"/><polyline fill="none" stroke="#F472B6" stroke-width="2.5" points="${all}"/><line x1="40" x2="${W-20}" y1="${Y(0)}" y2="${Y(0)}" stroke="#94a3b8"/><text x="${X(a)-4}" y="${H-8}" fill="#E2E8F0" font-size="11">a=${a}</text><text x="${X(b)-4}" y="${H-8}" fill="#E2E8F0" font-size="11">b=${b}</text></svg>`;
+ $('nnote').innerHTML=`$X\\sim N(${mu};${sg}^2)$: $P(${a}<X<${b})=\\Phi\\left(\\frac{${b}-${mu}}{${sg}}\\right)-\\Phi\\left(\\frac{${a}-${mu}}{${sg}}\\right)\\approx$ <b>${(Phi((b-mu)/sg)-Phi((a-mu)/sg)).toFixed(4)}</b>`;mathRender($('nnote'))}
+
+/* ===== Bản đồ tư duy ===== */
+const MM=[['Biến cố & xác suất','#38BDF8',['Công thức cộng','Xác suất có điều kiện','Công thức nhân','Công thức xác suất đầy đủ','Công thức Bayes']],
+['Biến ngẫu nhiên','#A78BFA',['Hàm phân phối tích lũy','Hàm mật độ','Kỳ vọng','Phương sai']],
+['Phân phối thường gặp','#F472B6',['Nhị thức','Poisson','Siêu bội','Chuẩn và chuẩn tắc','Student, khi bình phương, Fisher']],
+['Vectơ ngẫu nhiên','#FBBF24',['Phân phối đồng thời','Phân phối biên','Tính độc lập','Hiệp phương sai','Hệ số tương quan']],
+['Luật số lớn & ĐLGH','#34D399',['Bất đẳng thức Chebyshev','Luật số lớn','Định lý giới hạn trung tâm']],
+['Ước lượng','#FB923C',['Ước lượng điểm','Khoảng tin cậy cho trung bình','Khoảng tin cậy cho tỉ lệ','Cỡ mẫu cần thiết']],
+['Kiểm định','#60A5FA',['Cặp giả thuyết H0, H1','Sai lầm loại I và II','Kiểm định trung bình','Giá trị p']]];
+let mmOpen=-1;
+function mindUI(){drawMM();if(!$('mmp'))$('mmbox').insertAdjacentHTML('beforeend','<div id="mmp"></div>')}
+function drawMM(){const cx=350,cy=300,N=MM.length;let o='',nd=(x,y,t,c,big)=>{const w=t.length*(big?8:6.6)+18;return `<rect x="${x-w/2}" y="${y-13}" width="${w}" height="26" rx="13" fill="${c}" fill-opacity="${big?1:.9}"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="${big?13:11.5}" font-weight="600" fill="#06122e">${esc(t)}</text>`};
+ MM.forEach(([t,c,ch],i)=>{const a=-Math.PI/2+i*2*Math.PI/N,x=cx+150*Math.cos(a),y=cy+150*Math.sin(a);
+  o+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${c}" stroke-width="3"/>`;
+  if(mmOpen===i)ch.forEach((l,k)=>{const b=a+(k-(ch.length-1)/2)*.2,lx=cx+(255+(k%2)*28)*Math.cos(b),ly=cy+(255+(k%2)*28)*Math.sin(b);
+   o+=`<line x1="${x}" y1="${y}" x2="${lx}" y2="${ly}" stroke="${c}" stroke-opacity=".7"/><g style="cursor:pointer" onclick="mmLeaf(${i},${k})">${nd(Math.max(60,Math.min(640,lx)),ly,l,c,0)}</g>`});
+  o+=`<g style="cursor:pointer" tabindex="0" role="button" onclick="mmOpen=mmOpen===${i}?-1:${i};drawMM()" onkeydown="if(event.key==='Enter'){mmOpen=mmOpen===${i}?-1:${i};drawMM()}">${nd(x,y,t,c,1)}</g>`});
+ o+=`<circle cx="${cx}" cy="${cy}" r="44" fill="#7c3aed"/><text x="${cx}" y="${cy-2}" text-anchor="middle" fill="#fff" font-weight="800" font-size="13">XÁC SUẤT</text><text x="${cx}" y="${cy+14}" text-anchor="middle" fill="#fff" font-weight="800" font-size="13">THỐNG KÊ</text>`;
+ const keep=$('mmp')?$('mmp').outerHTML:'<div id="mmp"></div>';
+ $('mmbox').innerHTML=`<p class="small">Bấm vào một chương để mở nhánh, bấm một khái niệm để AI giải thích.</p><div style="overflow-x:auto"><svg viewBox="0 0 700 600" style="width:100%;min-width:340px;max-width:700px;display:block;margin:auto">${o}</svg></div>`+keep}
+async function mmLeaf(i,k){const t=MM[i][2][k];$('mmp').innerHTML='<div class="msg">AI đang giải thích "'+esc(t)+'"...</div>';
+ try{const a=await gem('Giải thích ngắn gọn khái niệm: '+t+' (Xác suất Thống kê đại học). Gồm ý chính, công thức chính, điều kiện áp dụng, 1 ví dụ số đơn giản. Tối đa 10 câu.',SYS);
+  $('mmp').innerHTML=`<div class="out"><h3>${esc(t)}</h3><div id="mma">${fmt(a)}</div></div><button class="alt" onclick="speak(document.getElementById('mma').dataset.r)">🔊 Nghe</button>`;$('mma').dataset.r=a;mathRender($('mma'))}
+ catch(e){$('mmp').innerHTML='<div class="msg err">Lỗi AI: '+esc(e.message)+'</div>'}}
+
+/* ===== Bảng viết tay ===== */
+let BS=[],bcur=null,berase=false,bpen=false;
+function boardUI(){if($('bd'))return;
+ $('bdbox').innerHTML=`<div><button id="bpb" onclick="berase=false;bUI()">✏️ Bút</button><button id="beb" class="alt" onclick="berase=true;bUI()">🧽 Tẩy</button>
+ <select id="bcol" style="width:auto"><option value="#111111">Đen</option><option value="#1d4ed8">Xanh dương</option><option value="#dc2626">Đỏ</option><option value="#15803d">Xanh lá</option></select>
+ Nét <input id="bw" type="range" min="1" max="10" value="3" style="width:110px"></div>
+ <canvas id="bd" width="1000" height="560" style="width:100%;background:#fff;border-radius:12px;touch-action:none;cursor:crosshair"></canvas>
+ <div><button class="alt" onclick="BS.pop();bRedraw()">↶ Hoàn tác</button><button class="alt" onclick="if(confirm('Xóa toàn bộ bảng?')){BS=[];bRedraw()}">Xóa hết</button><button onclick="bSend()">📤 Gửi sang Giải bài</button></div><div id="bmsg"></div>
+ <p class="small">Viết bằng bút (Apple Pencil) hoặc ngón tay. Khi đã dùng bút, chạm bằng lòng bàn tay sẽ bị bỏ qua. Bấm "Gửi" để AI đọc nét viết thành đề bài, bạn kiểm tra lại trước khi giải.</p>`;
+ const c=$('bd'),P=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*1000/r.width,(e.clientY-r.top)*560/r.height]};
+ c.onpointerdown=e=>{if(e.pointerType==='pen')bpen=true;if(e.pointerType==='touch'&&bpen)return;c.setPointerCapture(e.pointerId);const w=+$('bw').value;
+  bcur={c:berase?'#fff':$('bcol').value,w:berase?w*5:w,p:[P(e)]};BS.push(bcur);bRedraw()};
+ c.onpointermove=e=>{if(!bcur)return;bcur.p.push(P(e));bRedraw()};
+ c.onpointerup=c.onpointercancel=()=>{bcur=null};bRedraw();bUI()}
+function bUI(){$('bpb').classList.toggle('alt',berase);$('beb').classList.toggle('alt',!berase)}
+function bRedraw(){const c=$('bd'),x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,1000,560);x.lineCap=x.lineJoin='round';
+ BS.forEach(s=>{x.strokeStyle=s.c;x.lineWidth=s.w;x.beginPath();s.p.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));if(s.p.length===1)x.lineTo(s.p[0][0]+.1,s.p[0][1]);x.stroke()})}
+async function bSend(){if(!BS.length)return note('bmsg','Bảng đang trống.','err');note('bmsg','AI đang đọc nét viết...');
+ try{const t=await gem('Chép lại CHÍNH XÁC nội dung viết tay trong ảnh (đề bài toán), công thức viết bằng LaTeX trong $...$. Chỗ không đọc được ghi [?], không tự đoán. Chỉ trả về nội dung.',null,{type:'image/png',data:$('bd').toDataURL('image/png').split(',')[1]});
+  $('q').value=t.trim();document.querySelector('[data-t=solve]').click();note('sres','Đã đọc từ bảng viết. Hãy kiểm tra và sửa đề trước khi giải.','ok')}
+ catch(e){note('bmsg','Không đọc được: '+e.message,'err')}}
+
+/* ===== TUTOR ===== */
+const TEX=[['Trung bình mẫu','\\bar{x}=\\frac{1}{n}\\sum_{i=1}^{n}x_i'],['Phương sai hiệu chỉnh','s^2=\\frac{1}{n-1}\\sum (x_i-\\bar{x})^2'],['Phân phối chuẩn','X\\sim N(\\mu;\\sigma^2)'],['Chuẩn hóa','Z=\\frac{X-\\mu}{\\sigma}'],['Nhị thức','P(X=k)=C_n^k p^k(1-p)^{n-k}'],['Khoảng tin cậy','\\bar{x}\\pm z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}}'],['Thống kê kiểm định','T=\\frac{\\bar{x}-\\mu_0}{s/\\sqrt{n}}'],['Giả thuyết','H_0:\\mu=\\mu_0\\quad H_1:\\mu\\ne\\mu_0']];
+function tutorUI(){if($('tuin'))return;const D=(t,b)=>`<details class="out"><summary><b>${t}</b></summary><div style="margin-top:8px">${b}</div></details>`;
+ $('tubox').innerHTML='<div id="tuin"></div>'+[
+ D('Bắt đầu: kết nối AI','1) Lấy khóa miễn phí tại aistudio.google.com/apikey. 2) Dán vào ô API key, bấm <b>Tải danh sách model</b>, chọn model (nên thử bản flash trước) rồi <b>Kết nối</b>. 3) Đăng ký hoặc đăng nhập. Khóa chỉ lưu trên máy của bạn.'),
+ D('Giải bài với AI BUDDY','Nhập đề bằng chữ, giọng nói (🎤, micro chỉ tắt khi bạn bấm tắt), chụp ảnh hoặc viết tay ở mục <b>Bảng viết</b>. Luôn kiểm tra đề AI đọc được trước khi giải. Chọn mức hỗ trợ: gợi ý, một phần hoặc toàn bộ. Tab <b>＝ Máy tính</b> dùng để tính nhanh biểu thức, ví dụ <span class="mono">5!/(2!*3!)*0.3^2*0.7^3</span>. Nút 🔊 Nghe sẽ đọc lời giải bằng tiếng Việt.'),
+ D('Dùng diễn đàn','Bấm <b>Đăng câu hỏi</b>, gõ nội dung, chèn công thức bằng thanh ký hiệu và xem trước bên dưới. Dán ảnh bằng Ctrl+V (Cmd+V trên Mac). Mỗi bài có mũi tên ▼ để mở rộng và xem trả lời. Hãy che thông tin cá nhân trong ảnh chụp.'),
+ D('Gõ công thức LaTeX','Đặt công thức giữa hai dấu $. Mẫu thường dùng:<table style="width:100%;margin-top:8px">'+TEX.map(([n,c])=>`<tr><td class="small">${n}</td><td><code>${esc(c)}</code></td><td>$${c}$</td></tr>`).join('')+'</table>'),
+ D('Kết bạn, mã QR và chat','Mục <b>Bạn bè</b> có mã riêng dạng @ten#1234, link cá nhân và mã QR. Bạn bè quét QR bằng Google Lens hoặc Camera để tới hồ sơ và kết bạn. Sau khi được chấp nhận, bấm 💬 Chat để nhắn tin 1-1, dán được ảnh. Đây là chat giữa người thật, không phải robot.'),
+ D('Chatbot góc phải','Bấm 💬 ở góc phải dưới để hỏi nhanh bất kỳ câu hỏi toán nào. Chatbot có micro và nút nghe. Với bài tập dài, hãy dùng mục Giải bài.'),
+ D('Luyện tập và theo dõi','<b>Bài tương tự</b> sinh 5 bài kèm chiến lược. <b>Đồ thị</b> mô phỏng luật số lớn, giới hạn trung tâm, phân phối chuẩn. <b>Trò chơi</b> luyện xác suất. <b>Ôn tập</b> vẽ biểu đồ điểm mạnh yếu. <b>Bản đồ tư duy</b> tóm tắt kiến thức theo chương.')].join('');mathRender($('tubox'))}
+
+/* ===== Trang chủ ===== */
+const goTab=t=>document.querySelector('#tabs [data-t='+t+']').click();
+const HOME=[['Học & giải bài',[['solve','🧮','Giải bài','Gõ, nói, chụp ảnh hoặc dùng máy tính'],['board','✍️','Bảng viết tay','Viết tay rồi gửi AI đọc'],['grade','🎓','Chấm bài theo barem','Nộp bài, AI chấm từng bước'],['practice','📝','Bài tương tự','AI sinh 5 bài kèm chiến lược'],['mind','🧠','Bản đồ tư duy','Tóm tắt kiến thức theo chương'],['sim','📈','Đồ thị','Mô phỏng xác suất trực quan']]],
+['Luyện tập',[['game','🎲','Trò chơi','Xúc xắc và tính nhanh'],['review','📊','Ôn tập','Biểu đồ điểm mạnh, yếu']]],
+['Cộng đồng',[['forum','💬','Diễn đàn','Hỏi đáp cùng mọi người'],['friends','👥','Bạn bè & Chat','Mã QR, kết bạn, nhắn tin']]],
+['Khác',[['tutor','📖','TUTOR','Cẩm nang sử dụng'],['profile','👤','Hồ sơ','Chọn avatar']]]];
+function homeUI(){const L=getLog(),d0=new Date().setHours(0,0,0,0),td=L.filter(x=>x.t>=d0).length,g=L.filter(x=>typeof x.ok==='boolean'),ok=g.filter(x=>x.ok).length;
+ $('hmbox').innerHTML=`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">${avSVG(myAv(),64)}<div><h2 style="margin:0">Xin chào, ${esc(myName())}!</h2><div class="small">Hôm nay: ${td} hoạt động · Tỉ lệ đúng: ${g.length?Math.round(ok/g.length*100)+'%':'chưa có dữ liệu'} · Model: ${esc((MODEL||'').replace('models/',''))}</div></div></div>`+
+ HOME.map(([t,it])=>`<h3>${t}</h3><div class="hgrid">${it.map(([k,e,n,d])=>`<button class="hc" onclick="goTab('${k}')"><span style="font-size:30px">${e}</span><b>${n}${k==='friends'?' '+$('badge').textContent:''}</b><span class="small">${d}</span></button>`).join('')}</div>`).join('')}
+
+/* ===== Chấm bài theo barem ===== */
+let TEACHER=false,EX={},CURX=null;
+const LABELS='Sai khái niệm, Sai công thức, Sai tính toán, Thiếu điều kiện áp dụng, Thiếu kết luận, Sai làm tròn hoặc đơn vị, Đúng';
+async function gradeUI(){CURX=null;const{data,error}=await sb.from('exams').select('*').order('created_at',{ascending:false});
+ if(error)return $('grbox').innerHTML=`<div class="msg err">${esc(error.message)}. Đã chạy schema_barem.sql chưa?</div>`;
+ EX={};data.forEach(e=>EX[e.id]=e);
+ let h='';
+ if(TEACHER)h+=`<details class="out"><summary><b>👩‍🏫 Giảng viên: tạo đề và barem</b></summary>
+  <input id="gt" placeholder="Tên đề"><select id="gc">${CH.map(c=>`<option>${esc(c)}</option>`).join('')}</select><input id="gtot" type="number" value="10" min="1" step="0.5" placeholder="Thang điểm tổng">
+  <textarea id="gq" placeholder="Nội dung đề (từng câu, từng ý; công thức dùng $...$)"></textarea>
+  <textarea id="gb" placeholder="BAREM: với mỗi câu/ý ghi điểm tối đa, các bước chấm và điểm từng bước (viết đúng công thức, thay số, tính đúng, kết luận), cách giải khác được chấp nhận, quy tắc trừ điểm, cách làm tròn, đáp án chuẩn."></textarea>
+  <label><input type="checkbox" id="gp" checked style="width:auto"> Công bố cho học viên</label><br><label><input type="checkbox" id="gs" style="width:auto"> Cho học viên xem barem sau khi nộp</label><br>
+  <button onclick="saveExam()">Lưu đề</button><div id="gmsg"></div></details>`;
+ h+='<h3>Danh sách đề</h3>'+(data.map(e=>`<div class="msg" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span><b>${esc(e.title)}</b><br><span class="small">${esc(e.chapter||'')} · ${e.total} điểm ${e.published?'':'· (ẩn)'}</span></span><span style="margin-left:auto"><button onclick="openExam(${e.id})">Làm bài</button>${e.teacher_id===user.id?`<button class="alt" onclick="exSubs(${e.id})">Bài nộp</button><button class="alt" onclick="togExam(${e.id},${!e.published})">${e.published?'Ẩn':'Công bố'}</button><button class="alt" onclick="delExam(${e.id})">Xóa</button>`:''}</span></div>`).join('')||'<p class="small">Chưa có đề nào.'+(TEACHER?'':' Giảng viên cần được cấp quyền để tạo đề.')+'</p>');
+ h+='<div id="gsubs"></div><h3>Lịch sử chấm của bạn</h3><div id="ghist" class="small">Đang tải...</div>';$('grbox').innerHTML=h;
+ const r=await sb.from('submissions').select('id,exam_id,score,created_at').eq('student_id',user.id).order('created_at',{ascending:false}).limit(10);
+ $('ghist').innerHTML=(r.data||[]).map(x=>`${new Date(x.created_at).toLocaleString('vi-VN')} – ${esc(EX[x.exam_id]?.title||'Đề đã xóa')}: <b>${x.score}</b> điểm<br>`).join('')||'Chưa có bài nào.'}
+async function saveExam(){const t=$('gt').value.trim(),q=$('gq').value.trim(),b=$('gb').value.trim();if(!t||!q||!b)return note('gmsg','Cần tên đề, nội dung đề và barem.','err');
+ const{error}=await sb.from('exams').insert({teacher_id:user.id,title:t,chapter:$('gc').value,total:+$('gtot').value||10,questions:q,barem:b,published:$('gp').checked,show_barem:$('gs').checked});
+ error?note('gmsg',error.message,'err'):gradeUI()}
+async function togExam(id,v){await sb.from('exams').update({published:v}).eq('id',id);gradeUI()}
+async function delExam(id){if(confirm('Xóa đề này và mọi bài nộp?')){await sb.from('exams').delete().eq('id',id);gradeUI()}}
+async function exSubs(id){const{data}=await sb.from('submissions').select('student_name,score,created_at').eq('exam_id',id).order('created_at',{ascending:false});
+ $('gsubs').innerHTML=`<div class="out"><b>Bài nộp: ${esc(EX[id].title)} (${(data||[]).length})</b><br>`+((data||[]).map(x=>`${esc(x.student_name||'?')}: <b>${x.score}</b>/${EX[id].total} · <span class="small">${new Date(x.created_at).toLocaleString('vi-VN')}</span><br>`).join('')||'Chưa có bài nộp.')+'</div>'}
+function openExam(id){const e=EX[id];CURX=e;
+ $('grbox').innerHTML=`<button class="alt" onclick="gradeUI()">← Danh sách đề</button><h3>${esc(e.title)} (${e.total} điểm)</h3><div class="out" id="gqq">${fmt(e.questions)}</div>
+ <h3>Bài làm của bạn</h3><p class="small">Gõ bài làm, hoặc chụp ảnh / tải PDF để AI chép lại. Hãy kiểm tra và sửa phần AI chép trước khi chấm. Chỉ chụp bài làm, tránh thông tin cá nhân.</p>
+ <textarea id="ga" style="min-height:160px" placeholder="Bài làm (công thức dùng $...$)"></textarea>
+ <button class="alt" id="gmic" onclick="toggleMic('ga','gmic')">🎤 Bật micro</button><button class="alt" onclick="$('gf').click()">📷 Ảnh / PDF bài làm</button><input id="gf" type="file" accept="image/*,application/pdf" class="hide" onchange="gOcr(this)">
+ <button onclick="gradeRun()">Chấm theo barem</button><div id="gres"></div>`;mathRender($('gqq'))}
+async function gOcr(inp){const f=inp.files[0];if(!f)return;if(f.size>8e6)return note('gres','Tệp quá lớn (tối đa 8 MB).','err');note('gres','Đang chép lại bài làm...');
+ try{const t=await gem('Chép lại CHÍNH XÁC bài làm của học viên (chữ viết tay hoặc in), công thức viết LaTeX trong $...$. Chỗ không đọc được ghi [?], tuyệt đối không tự đoán hay sửa lỗi sai của học viên. Chỉ trả nội dung.',null,{type:f.type,data:await toB64(f)});
+  $('ga').value=t.trim();note('gres','Đã chép. Hãy đối chiếu với bài gốc, sửa chỗ [?] rồi bấm Chấm.','ok')}catch(e){note('gres','Không đọc được: '+e.message,'err')}inp.value=''}
+async function gradeRun(){const a=$('ga').value.trim();if(!a)return note('gres','Chưa có bài làm.','err');if(/\[\?\]/.test(a)&&!confirm('Bài còn chỗ [?] chưa xác nhận. Vẫn chấm?'))return;
+ const e=CURX;note('gres','AI đang chấm theo barem...');
+ try{const t=await gem(`ĐỀ:\n${e.questions}\n\nBAREM (giảng viên, thang ${e.total}):\n${e.barem}\n\nBÀI LÀM ĐÃ XÁC NHẬN:\n${a}\n\nChấm công bằng theo ĐÚNG barem, không tự đặt hay sửa barem; chấp nhận cách giải khác nếu barem cho phép; không nâng điểm cho dễ chịu, không khắt khe quá mức; không trừ điểm vì lỗi nhận dạng chữ. Nếu có chỗ mơ hồ hãy ghi vào "uncertain" và chấm phần chắc chắn. Chỉ đưa chiến lược sửa, KHÔNG viết lời giải hoàn chỉnh, KHÔNG nêu đáp án cuối. Nhãn lỗi chọn trong: ${LABELS}. Trả JSON {"items":[{"part":"Câu 1a","max":số,"got":số,"comment":"vì sao được điểm này","label":"nhãn"}],"strategy":"hướng sửa theo từng bước cần xem lại","uncertain":"mức chưa chắc chắn hoặc chuỗi rỗng"}. Trong JSON ký tự \\ của LaTeX viết thành \\\\.`,'Bạn là giảng viên Xác suất Thống kê chấm bài nghiêm túc, tiếng Việt. Chỉ trả JSON hợp lệ.',null,null,{responseMimeType:'application/json'});
+  const r=JSON.parse(t.replace(/^```json|```$/g,'').trim());r.items=(r.items||[]).map(i=>({part:String(i.part),max:+i.max||0,got:Math.max(0,Math.min(+i.got||0,+i.max||0)),comment:String(i.comment||''),label:String(i.label||'')}));
+  let tot=r.items.reduce((x,i)=>x+i.got,0);tot=Math.round(Math.min(tot,e.total)*100)/100;
+  const{error}=await sb.from('submissions').insert({exam_id:e.id,student_id:user.id,student_name:myName(),answer_text:a.slice(0,20000),score:tot,feedback:r});
+  addLog('Chấm barem – '+e.title.slice(0,20),tot>=e.total/2);
+  $('gres').innerHTML=`<div class="out"><h3>Điểm: ${tot}/${e.total}</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${r.items.map(i=>`<tr style="border-top:1px solid #3b4a90"><td><b>${esc(i.part)}</b></td><td>${i.got}/${i.max}</td><td>${esc(i.label)}</td><td>${fmt(i.comment)}</td></tr>`).join('')}</table></div>
+  <h3>Chiến lược sửa</h3><div>${fmt(String(r.strategy||''))}</div>${r.uncertain?`<div class="msg">Mức chưa chắc chắn: ${fmt(String(r.uncertain))}</div>`:''}
+  <div class="small">Điểm do AI chấm theo barem của giảng viên, mang tính tham khảo. Giảng viên có thể xem lại.${error?' (Chưa lưu được bài nộp: '+esc(error.message)+')':''}</div>${e.show_barem?`<details><summary>Xem barem</summary>${fmt(e.barem)}</details>`:''}</div>`;mathRender($('gres'))}
+ catch(er){$('gres').innerHTML='<div class="msg err">Không chấm được: '+esc(er.message)+'</div><button onclick="gradeRun()">Thử lại</button>'}}
+
+sb.auth.onAuthStateChange(()=>{});
+route();
+</script></body></html>
