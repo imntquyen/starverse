@@ -237,8 +237,11 @@ async function botSend(){const t=$('bi').value.trim();if(!t)return;$('bi').value
  catch(e){w.className='msg err';w.textContent='Lỗi: '+e.message}log.scrollTop=1e9}
 
 /* ===== Diễn đàn (Supabase, thời gian thực) ===== */
-async function loadPosts(){const{data,error}=await sb.from('posts').select('*, replies(*)').order('created_at',{ascending:false}).limit(50);
- if(error)return note('fmsg','Chưa tải được diễn đàn: '+error.message+' (đã chạy schema.sql chưa?)','err');
+async function loadPosts(){const{data,error}=await sb.from('posts').select('*').order('created_at',{ascending:false}).limit(50);
+ if(error)return note('fmsg','Chưa tải được bài đăng: '+error.message+' (đã chạy schema.sql chưa?)','err');
+ data.forEach(x=>x.replies=[]);
+ if(data.length){const rr=await sb.from('replies').select('*').in('post_id',data.map(x=>x.id)).order('created_at');
+  if(rr.error)note('fmsg','Chưa tải được trả lời: '+rr.error.message,'err');else rr.data.forEach(r=>{const o=data.find(x=>x.id===r.post_id);o&&o.replies.push(r)})}
  $('posts').innerHTML=data.map(p=>`<div class="post"><b>${esc(p.title)}</b> <span class="small">– ${esc(p.author)}, ${new Date(p.created_at).toLocaleString('vi-VN')}</span>
  <div class="pbody hide out" data-id="${p.id}">${fmt(p.body)}<hr>${(p.replies||[]).map(r=>`<div class="msg"><b>${esc(r.author)}:</b> ${fmt(r.body)}</div>`).join('')}
  <textarea placeholder="Trả lời..." id="r${p.id}"></textarea><button onclick="reply(${p.id})">Gửi trả lời</button>${p.user_id===user.id?`<button class="alt" onclick="delPost(${p.id})">Xóa bài</button>`:''}</div>
